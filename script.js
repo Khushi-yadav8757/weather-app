@@ -1,71 +1,122 @@
-const container = document.getElementById("weather-container");
-const loader = document.getElementById("loader");
-const errorBox = document.getElementById("error");
+const cities = ["Delhi","London","Tokyo"]
 
-const cities = [
-  { name: "Delhi", lat: 28.61, lon: 77.23 },
-  { name: "London", lat: 51.50, lon: -0.12 },
-  { name: "New York", lat: 40.71, lon: -74.00 }
-];
+const container = document.getElementById("weatherContainer")
+const loader = document.getElementById("loader")
 
-function getWeatherEmoji(code) {
-  if (code === 0) return "☀️";
-  if (code <= 3) return "⛅";
-  if (code <= 48) return "🌫";
-  if (code <= 67) return "🌧";
-  if (code <= 77) return "❄️";
-  return "🌦";
+// weather code mapping
+
+function weatherInfo(code){
+
+if(code === 0) return {text:"Clear Sky", emoji:"☀️"}
+if(code <=3) return {text:"Cloudy", emoji:"⛅"}
+if(code <=48) return {text:"Fog", emoji:"🌫"}
+if(code <=67) return {text:"Rain", emoji:"🌧"}
+if(code <=77) return {text:"Snow", emoji:"❄️"}
+if(code <=82) return {text:"Showers", emoji:"🌦"}
+if(code <=99) return {text:"Thunderstorm", emoji:"⛈"}
+
+return {text:"Unknown", emoji:"❓"}
+
 }
 
-function fetchWeather(city) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`;
 
-  return fetch(url)
-    .then(res => res.json())
-    .then(data => ({
-      city: city.name,
-      temp: data.current_weather.temperature,
-      code: data.current_weather.weathercode
-    }));
+// get coordinates
+
+async function getCoordinates(city){
+
+const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`)
+
+const data = await res.json()
+
+return {
+
+city:city,
+lat:data.results[0].latitude,
+lon:data.results[0].longitude
+
 }
 
-function createCard(data) {
-
-  const card = document.createElement("div");
-  card.className = "card";
-
-  const emoji = getWeatherEmoji(data.code);
-
-  card.innerHTML = `
-  <h3>${data.city}</h3>
-  <div class="emoji">${emoji}</div>
-  <div class="temp">${data.temp}°C</div>
-  <p>Weather Code: ${data.code}</p>
-  `;
-
-  container.appendChild(card);
 }
 
-async function loadWeather() {
 
-  try {
+// get weather
 
-    loader.style.display = "block";
+async function getWeather(loc){
 
-    const promises = cities.map(city => fetchWeather(city));
+const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`)
 
-    const results = await Promise.all(promises);
+const data = await res.json()
 
-    loader.style.display = "none";
+return{
 
-    results.forEach(data => createCard(data));
+city:loc.city,
+temp:data.current_weather.temperature,
+code:data.current_weather.weathercode
 
-  } catch (err) {
-
-    loader.style.display = "none";
-    errorBox.textContent = "Failed to load weather data.";
-
-  }
 }
 
-loadWeather();
+}
+
+
+// create UI card
+
+function createCard(data){
+
+const weather = weatherInfo(data.code)
+
+const card = document.createElement("div")
+
+card.className="card"
+
+card.innerHTML=`
+
+<div class="city">${data.city}</div>
+
+<div class="emoji">${weather.emoji}</div>
+
+<div class="temp">${data.temp}°C</div>
+
+<div class="condition">${weather.text}</div>
+
+`
+
+container.appendChild(card)
+
+}
+
+
+// main function
+
+async function loadWeather(){
+
+try{
+
+loader.classList.remove("hidden")
+
+const locations = await Promise.all(
+cities.map(city=>getCoordinates(city))
+)
+
+const weatherData = await Promise.all(
+locations.map(loc=>getWeather(loc))
+)
+
+weatherData.forEach(createCard)
+
+}
+
+catch(err){
+
+container.innerHTML="<h2>⚠ Failed to load weather</h2>"
+
+}
+
+finally{
+
+loader.classList.add("hidden")
+
+}
+
+}
+
+loadWeather()
