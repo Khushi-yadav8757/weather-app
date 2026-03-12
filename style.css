@@ -2,62 +2,132 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial;
+font-family: 'Segoe UI', sans-serif;
 }
 
 body{
-background:linear-gradient(135deg,#4facfe,#00f2fe);
+
 min-height:100vh;
 display:flex;
 flex-direction:column;
 align-items:center;
-padding:30px;
-color:#fff;
+padding:40px;
+
+/* animated gradient */
+
+background:linear-gradient(270deg,#667eea,#764ba2,#4facfe,#00f2fe);
+background-size:800% 800%;
+animation:gradient 12s ease infinite;
+
+color:white;
+
+}
+
+@keyframes gradient{
+
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+
 }
 
 h1{
-margin-bottom:30px;
+margin-bottom:40px;
+font-size:40px;
+letter-spacing:1px;
 }
 
-.container{
-display:flex;
-gap:20px;
-flex-wrap:wrap;
-justify-content:center;
+/* container */
+
+.weather-container{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+width:100%;
+max-width:900px;
+
 }
+
+/* glass card */
 
 .card{
-background:white;
-color:#333;
-padding:20px;
-border-radius:12px;
-width:200px;
+
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(12px);
+
+border-radius:20px;
+
+padding:30px;
+
 text-align:center;
-box-shadow:0 4px 12px rgba(0,0,0,0.2);
-transition:0.3s;
+
+box-shadow:0 15px 35px rgba(0,0,0,0.2);
+
+transition:0.4s;
+
 }
 
 .card:hover{
-transform:translateY(-5px);
+
+transform:translateY(-8px) scale(1.02);
+
+box-shadow:0 20px 40px rgba(0,0,0,0.3);
+
+}
+
+.city{
+
+font-size:24px;
+font-weight:bold;
+
 }
 
 .temp{
-font-size:28px;
-font-weight:bold;
+
+font-size:48px;
 margin:10px 0;
+
+}
+
+.condition{
+
+font-size:18px;
+opacity:0.9;
+
 }
 
 .emoji{
-font-size:40px;
+
+font-size:50px;
+
 }
+
+/* spinner */
 
 .loader{
-font-size:18px;
-margin-bottom:20px;
+
+border:6px solid rgba(255,255,255,0.3);
+border-top:6px solid white;
+
+border-radius:50%;
+
+width:60px;
+height:60px;
+
+animation:spin 1s linear infinite;
+
+margin-bottom:30px;
+
 }
 
-.error{
-color:red;
-margin-top:20px;
-font-weight:bold;
+.hidden{
+display:none;
+}
+
+@keyframes spin{
+
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+
 }
