@@ -2,33 +2,37 @@ const cities = ["Delhi","London","Tokyo"]
 
 const container = document.getElementById("weatherContainer")
 const loader = document.getElementById("loader")
-
-// weather code mapping
+const input = document.getElementById("cityInput")
+const button = document.getElementById("searchBtn")
 
 function weatherInfo(code){
 
-if(code === 0) return {text:"Clear Sky", emoji:"☀️"}
-if(code <=3) return {text:"Cloudy", emoji:"⛅"}
-if(code <=48) return {text:"Fog", emoji:"🌫"}
-if(code <=67) return {text:"Rain", emoji:"🌧"}
-if(code <=77) return {text:"Snow", emoji:"❄️"}
-if(code <=82) return {text:"Showers", emoji:"🌦"}
-if(code <=99) return {text:"Thunderstorm", emoji:"⛈"}
+if(code === 0) return {text:"Clear Sky",emoji:"☀️"}
+if(code <=3) return {text:"Cloudy",emoji:"⛅"}
+if(code <=48) return {text:"Fog",emoji:"🌫"}
+if(code <=67) return {text:"Rain",emoji:"🌧"}
+if(code <=77) return {text:"Snow",emoji:"❄️"}
+if(code <=82) return {text:"Showers",emoji:"🌦"}
+if(code <=99) return {text:"Thunderstorm",emoji:"⛈"}
 
-return {text:"Unknown", emoji:"❓"}
+return {text:"Unknown",emoji:"❓"}
 
 }
 
 
-// get coordinates
+// coordinates
 
 async function getCoordinates(city){
 
-const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`)
+const res = await fetch(
+`https://geocoding-api.open-meteo.com/v1/search?name=${city}`
+)
 
 const data = await res.json()
 
-return {
+if(!data.results) throw "City not found"
+
+return{
 
 city:city,
 lat:data.results[0].latitude,
@@ -39,11 +43,13 @@ lon:data.results[0].longitude
 }
 
 
-// get weather
+// weather
 
 async function getWeather(loc){
 
-const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`)
+const res = await fetch(
+`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`
+)
 
 const data = await res.json()
 
@@ -58,7 +64,7 @@ code:data.current_weather.weathercode
 }
 
 
-// create UI card
+// card
 
 function createCard(data){
 
@@ -71,11 +77,8 @@ card.className="card"
 card.innerHTML=`
 
 <div class="city">${data.city}</div>
-
 <div class="emoji">${weather.emoji}</div>
-
 <div class="temp">${data.temp}°C</div>
-
 <div class="condition">${weather.text}</div>
 
 `
@@ -85,16 +88,18 @@ container.appendChild(card)
 }
 
 
-// main function
+// load weather
 
-async function loadWeather(){
+async function loadWeather(cityList){
 
-try{
+container.innerHTML=""
 
 loader.classList.remove("hidden")
 
+try{
+
 const locations = await Promise.all(
-cities.map(city=>getCoordinates(city))
+cityList.map(city=>getCoordinates(city))
 )
 
 const weatherData = await Promise.all(
@@ -107,16 +112,32 @@ weatherData.forEach(createCard)
 
 catch(err){
 
-container.innerHTML="<h2>⚠ Failed to load weather</h2>"
+container.innerHTML="<h2>⚠ City not found</h2>"
 
 }
-
-finally{
 
 loader.classList.add("hidden")
 
 }
 
+
+// default cities
+
+loadWeather(cities)
+
+
+// search button
+
+button.addEventListener("click",()=>{
+
+const city = input.value.trim()
+
+if(city){
+
+loadWeather([city])
+
+input.value=""
+
 }
 
-loadWeather()
+})
